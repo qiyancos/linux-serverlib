@@ -1,0 +1,115 @@
+#! /bin/bash
+
+if [ ${1}x = -hx -o ${1}x = x ]
+then 
+	echo
+	echo "This script helps to print word with formats specified by arguments!"
+	echo "Usage: echo_color [font format] [echo arguments] -t text"
+	echo "    [font format]"
+	echo "       <Font Color> black, red, green, yellow, blue, purple, dark_green, white"
+	echo "       <Background Color > back_black, back_red, back_green, back_yellow"
+	echo "           back_blue, back_purple, back_dark_green, back_white"
+	echo "       <Font Type>* bold, underline, flash"
+	echo "       '*' respects that this kind of arguments can be overlay with each other!"
+	echo "    [echo arguments] These arguments will be directly passed to echo!"
+	echo; exit
+fi
+
+colorFlag=0
+backgroundFlag=0
+argFlag=0
+
+addColor(){
+	if [ $1 = 0 ]
+	then 
+		if [ $colorFlag = 0 ]
+		then
+			add=$2
+			colorFlag=1
+			argFlag=1
+		else 
+			echo "Too many arguments for <Font Color>. Use -h for help!"
+			exit
+		fi
+	fi
+	
+	if [ $1 = 1 ]
+	then
+		if [ $backgroundFlag = 0 ]
+		then 
+			add=$[$2 + 10]
+			backgroundFlag=1
+			argFlag=1
+		else 
+			echo "Too many arguments for <Background Color>. Use -h for help!"
+			exit
+		fi
+	fi
+
+	if [ $1 = 2 ]
+	then add=$2; argFlag=1
+	fi
+
+	if [ ${add}x != x ]
+	then
+		if [ ${start}x = x ]
+		then start="$add"
+		else start="$start;$add"
+		fi
+	fi
+}
+
+argCount=1
+for arg in $*
+do
+	if [ ${arg:0:1} = - -a $arg != -t -a $arg != -e ]
+	then
+		echoArgs="$echoArgs $arg"
+		argCount=$[argCount + 1]
+		continue
+	fi
+
+	check=(`echo "$arg" | sed 's/_/ /g'`)
+	if [ ${check[0]}x = backx ]
+	then 
+		count=${#arg}
+		arg=${arg:5:$[count - 5]}
+		background=1
+	else background=0
+	fi
+
+	case $arg in
+	black) addColor $background 30;;
+	red) addColor $background 31;;
+	green) addColor $background 32;;
+	yellow) addColor $background 33;;
+	blue) addColor $background 34;;
+	purple) addColor $background 35;;
+	dark_green) addColor $background 36;;
+	white) addColor $background 37;;
+	bold) addColor 2 1;;
+	underline) addColor 2 4;;
+	flash) addColor 2 5;;
+	-t)
+		shift $argCount
+		text=$*
+		break;;
+	*) 
+		echo "Bad argument [$arg]! Use -h for help"
+		exit;;
+	esac
+
+	argCount=$[argCount + 1]
+done
+
+if [ "${text}x" = x ]
+then 
+	echo "Text must not be empty. Use -h for help!"
+	exit
+fi
+
+if [ $argFlag = 0 ]
+then echo $echoArgs "$argFlag $text"
+else echo -e $echoArgs "\033[${start}m$text\033[0m"
+fi
+

@@ -1,0 +1,47 @@
+#! /bin/bash
+if [[ x$1 =~ ^(x|x-h)$ ]]
+then
+	echo "Usage: my-user [Options]"
+	echo "    -l, list all the users login through ssh"
+	echo "    -k, kill the connections given by the numbers following this option"
+	echo "        you may add 5 to this option when you want kill connection pts/5"
+	exit 0
+fi
+
+currentId=`who am i | sed 's/pts\///' | awk '{print $2}'`
+if [ $1 = -l ]
+then who | sed "/pts\/$currentId/ s/$/ (current connection)/"
+elif [ $1 = -k ]
+then
+	shift
+	for targetId in $*
+	do
+		if [ $targetId = $currentId ]
+		then
+			echo "Warning: You are trying to kill current connection! To make sure that"
+			echo "the other targets will be killed normally, we will exit after all the"
+			echo "other operations are done."
+			killMyself=1
+		else
+			echo ">> Killing connection \"pts/$targetId\""
+			pkill -kill -t pts/$targetId
+		fi
+	done
+else
+	echo "Error: Unknown option \"$1\"! Use -h for help."
+	exit 1
+fi
+
+while [ x$killMyself = x1 ]
+do
+	echo -n "Are you sure to kill current connection? [Y/N] "
+	read flag
+	if [[ x$flag =~ ^(xy|xY)$ ]]
+	then pkill -kill -t pts/$currentId
+	elif [[ x$flag =~ ^(xn|xN)$ ]]
+	then
+		echo ">> Exit without killing current connection!"
+		exit 0
+	else echo "Invalid input!"
+	fi
+done

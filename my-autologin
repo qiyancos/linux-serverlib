@@ -1,0 +1,58 @@
+#! /bin/bash
+studentId=1701213965
+password=lishuoke1025
+retryTimes=5
+
+ConnectCheck(){
+echo ">> Checking internet connection..."
+curl --connect-timeout 5 www.baidu.com &> /dev/null
+if [ $? = 0 ]
+then
+	echo ">> Connection check passed!"
+	return 0
+else
+	echo ">> Connection check failed!"
+	return 1
+fi
+}
+
+Login(){
+echo ">> Checking connection to login page..."
+curl --connect-timeout 5 its.pku.edu.cn &> /dev/null
+if [ $? = 0 ]
+then
+	echo ">> Connection check passed for login page"
+	echo ">> Start login..."
+	result=`~/serverlib/src/pku_connect -u $studentId -p $password`
+	if [ $? != 0 ]
+	then
+		echo "Error: error(s) have occurred while trying to login"
+		if [ "x$result" != x ]
+		then echo "Infomation: $result"
+		fi
+		return 1 # this error donot need retry 
+	else
+		loginIP=`echo $result | awk '{print $5}' | sed 's/;//'`
+		echo ">> Login to IP: $loginIP"
+	fi
+else
+	echo ">> Connection check failed for login page"
+	return 0 # return 0 for retry
+fi
+}
+
+tryCnt=1
+while [ $tryCnt -le $retryTimes ]
+do
+	ConnectCheck
+	if [ $? = 0 ]
+	then exit
+	else
+		echo ">> $tryCnt/$retryTimes time trying to login:"
+		Login
+		if [ $? != 0 ]
+		then exit 1
+		fi
+		tryCnt=$[tryCnt + 1]
+	fi
+done
