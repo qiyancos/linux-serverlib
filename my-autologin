@@ -23,7 +23,7 @@ if [ $? = 0 ]
 then
 	echo ">> Connection check passed for login page"
 	echo ">> Start login..."
-	result=`~/serverlib/src/pku_connect -u $studentId -p $password`
+	result=`$(dirname $0)/src/pku_connect -u $studentId -p $password`
 	if [ $? != 0 ]
 	then
 		echo "Error: error(s) have occurred while trying to login"

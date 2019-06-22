@@ -1,0 +1,61 @@
+#! /bin/bash
+cd `dirname $0`
+root=$PWD
+source $root/lib/shimport $root/lib
+shimport color_scheme.shh
+shimport basic_func.shh
+
+listAvailableTools(){
+    setArgs $*
+    checkArgs '$_funcArgsCnt = 0' "Too many arguments"
+    checkArgs '-d $root/tools' "Can not locate directory for tools"
+    toolsList=`ls $root/tools`
+    if [ "x$toolsList" != x ]
+    then
+        RUNMSGL "-- The following tools are available:\n -- "
+        WARNT "$toolsList"
+    else WARN "Can not find any available tools!"
+    fi
+}
+
+printHelpInfo(){
+    if [ $# = 1 ]
+    then
+        echo -n "-- "; RUNMSGN "help"; echo " print help information, use \"help toolname\" for tool's help"
+        echo -n "-- "; RUNMSGN "list"; echo " list all the tools available."
+    else
+        for toolName in $*
+        do
+            if [ -f $root/tools/$toolName ]
+            then
+                echo -n "-- "; RUNMSG "Help information for $toolName"
+                $toolName -h
+            else ERROR "No tool named as $toolName!"
+            fi
+        done
+    fi
+}
+
+echo    "=============================================================="
+RUNMSG  "            Welcome to a minimal bash for my-tools            "
+WARNT   "                All right reserved by Rock Lee                "
+echo    "=============================================================="
+RUNMSGL "            [You may use help for help information]           "
+export PATH=$root/tools:$PATH
+
+while [ 1 ]
+do
+    WARNTN "my-tools"; echo -n ":"
+    RUNMSGN "$PWD"; echo -n "$ "
+    read commandLine
+    commandLines=($commandLine)
+    firstCommand=${commandLines[0]}
+    commandLines[0]=''
+    case x$firstCommand in
+    x) continue;;
+    xlist) listAvailableTools ${commandLines[*]};;
+    xhelp) printHelpInfo ${commandLines[*]};;
+    xexit) exit ${commandLines[*]};;
+    x*) $commandLine;;
+    esac
+done
