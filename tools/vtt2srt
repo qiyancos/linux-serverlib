@@ -1,0 +1,52 @@
+#! /bin/bash
+oldPath=$PWD
+root=`dirname $0`
+cd $root
+root=$PWD
+cd $oldPath
+source $root/../lib/shimport $root/../lib
+shimport color_scheme.shh
+
+convertFile(){
+	cp $1 /tmp/vtt2srt.tmp
+    fileName=`basename $1 | sed 's/\./ /' | awk '{print $1}'`
+	RUNMSGL ">> Converting $1 to `dirname $1`/$fileName.srt"
+	sed -i '1,3d' /tmp/vtt2srt.tmp
+	titleIndex=1
+	totalLines=`grep -n "\-\->" /tmp/vtt2srt.tmp | sed 's/:/ /' | awk '{print $1}'`
+	for lineNum in $totalLines
+	do
+		lineNum=$[lineNum - 2 + titleIndex]
+		sed -i "${lineNum}a\ $titleIndex" /tmp/vtt2srt.tmp
+		titleIndex=$[titleIndex + 1]
+	done
+	sed -i 's/&gt;//g' /tmp/vtt2srt.tmp
+	mv /tmp/vtt2srt.tmp `dirname $1`/$fileName.srt
+    if [ x$deleteFlag = x1 ]
+    then rm $1
+    fi
+	RUNMSGL ">> $1 conversion finished"
+}
+
+if [[ x$1 =~ ^(x|x-h)$ ]]
+then
+    echo "Usage: vtt2srt [options] [file/directory]"
+    echo "    This tool is used for format conversion from \"vtt\" to \"srt\""
+    echo "    -d, delete original files after format conversion"
+    exit 0
+elif [ x$1 = x-d ]
+then
+    deleteFlag=1
+    shift
+elif [ -f $1 ]
+then convertFile $1
+elif [ -d $1 ]
+then
+    fileList=`find $1 -name "*.vtt"`
+    for file in $fileList
+    do convertFile $file
+    done
+else
+    ERROR "No such file or directory!"
+    exit 1
+fi

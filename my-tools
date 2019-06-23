@@ -1,6 +1,8 @@
 #! /bin/bash
+oldPath=$PWD
 cd `dirname $0`
 root=$PWD
+cd $oldPath
 source $root/lib/shimport $root/lib
 shimport color_scheme.shh
 shimport basic_func.shh
@@ -12,17 +14,19 @@ listAvailableTools(){
     toolsList=`ls $root/tools`
     if [ "x$toolsList" != x ]
     then
-        RUNMSGL "-- The following tools are available:\n -- "
-        WARNT "$toolsList"
+        RUNMSGL "-- The following tools are available:"
+        WARNTL "$toolsList"
     else WARN "Can not find any available tools!"
     fi
 }
 
 printHelpInfo(){
-    if [ $# = 1 ]
+    if [ $# = 0 ]
     then
-        echo -n "-- "; RUNMSGN "help"; echo " print help information, use \"help toolname\" for tool's help"
+        echo -n "-- "; RUNMSGN "help"; echo -n " print help information, "
+        echo "use \"help toolname\" for tool's help"
         echo -n "-- "; RUNMSGN "list"; echo " list all the tools available."
+        echo -n "-- "; RUNMSGN "exit"; echo " exit my-tools' minimal bash"
     else
         for toolName in $*
         do
@@ -47,8 +51,7 @@ while [ 1 ]
 do
     WARNTN "my-tools"; echo -n ":"
     RUNMSGN "$PWD"; echo -n "$ "
-    read commandLine
-    commandLines=($commandLine)
+    read -a commandLines
     firstCommand=${commandLines[0]}
     commandLines[0]=''
     case x$firstCommand in
@@ -56,6 +59,6 @@ do
     xlist) listAvailableTools ${commandLines[*]};;
     xhelp) printHelpInfo ${commandLines[*]};;
     xexit) exit ${commandLines[*]};;
-    x*) $commandLine;;
+    x*) eval "$firstCommand ${commandLines[*]}";;
     esac
 done
