@@ -6,6 +6,10 @@ cd $oldPath
 source $root/lib/shimport $root/lib
 shimport color_scheme.shh
 shimport basic_func.shh
+shopt -s  expand_aliases
+alias ls='ls --color'
+alias ll='ls -l'
+alias la='ls -la'
 
 listAvailableTools(){
     setArgs $*
