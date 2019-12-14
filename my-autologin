@@ -1,6 +1,5 @@
 #! /bin/bash
 studentId=1701213965
-password=lishuoke1025
 retryTimes=5
 
 ConnectCheck(){
@@ -23,7 +22,12 @@ if [ $? = 0 ]
 then
 	echo ">> Connection check passed for login page"
 	echo ">> Start login..."
-	result=`$(dirname $0)/src/pku_connect -u $studentId -p $password`
+    if [ x$password = x ]
+    then
+        echo -n "Please enter your password: "
+        read -p password
+	fi
+    result=`$(dirname $0)/src/pku_connect -u $studentId -p $password`
 	if [ $? != 0 ]
 	then
 		echo "Error: error(s) have occurred while trying to login"

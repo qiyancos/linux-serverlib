@@ -1,5 +1,5 @@
 #! /bin/bash
-if [[ x$1 =~ ^(x|x-h)$ ]]
+if [ x$1 = x-h ]
 then
 	echo "Usage: my-user [Options]"
 	echo "    -l, list all the users login through ssh"
@@ -9,7 +9,7 @@ then
 fi
 
 currentId=`who am i | sed 's/pts\///' | awk '{print $2}'`
-if [ $1 = -l ]
+if [[ x$1 =~ ^(x-l|x)$ ]]
 then who | sed "/pts\/$currentId/ s/$/ (current connection)/"
 elif [ $1 = -k ]
 then

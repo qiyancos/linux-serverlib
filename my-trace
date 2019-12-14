@@ -1,0 +1,22 @@
+#! /bin/bash
+if [ ${1}x = x -o ${1}x = -hx ]
+then
+    echo "my-trace <filename>"
+    exit 0
+fi
+
+if [ ! -f $1 ]
+then
+    echo "$1: No such file."
+    exit 1
+else
+    while [ 1 ]
+    do
+        newMd5sum=`md5sum $1 | awk '{print $1}'`
+        if [ ${newMd5sum}x != ${oldMd5sum}x ]
+        then cat $1
+        else sleep 1s
+        fi
+        oldMd5sum=$newMd5sum
+    done
+fi
