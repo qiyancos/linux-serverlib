@@ -1,0 +1,78 @@
+#! /bin/bash
+Formats=(zip rar 7z tar gz xz bz2 tar.gz tar.xz tar.bz2 tar.7z)
+Cmds=(unzip unrar 7z tar gzip xz bzip2 tar tar tar tar)
+Args=(-vf -evf -xvf -xvf -dvf -dvf -dvf -zxvf -Jxvf -jxvf -xvf)
+Install=(zip rar p7zip-full tar gzip xzip bzip2 tar tar tar tar)
+
+if [ x$1 = x -o x$1 = x-h ]
+then
+    echo "Usage: untar <Options> [Dir/File]"
+    echo "    This tool is used to decompress files with different formats"
+    echo "    Supported format: $Formats"
+    echo "    -d, delete original compressed files after decompressing"
+    exit 0
+elif [ $# = 1 ]
+then dir=$1
+else
+    options=$1
+    dir=$2
+fi
+
+if [ -d $dir ]
+then fileList=`ls $dir`
+elif [ -f $dir ]
+then fileList=$dir
+else
+    echo "Error: File or directory not given!"
+    exit -1
+fi
+
+for file in $fileList
+do
+    fileWords=(`echo $file | sed 's/\./ /g'`)
+    wordsCnt=`echo ${fileWords[*]} | wc -w`
+    if [ ${fileWords[$[wordsCnt - 2]]} = tar ]
+    then format="tar.${fileWords[$[wordsCnt - 1]]}"
+    else format="${fileWords[$[wordsCnt - 1]]}"
+    fi
+    index=0
+    while [ "x${Formats[$index]}" != x ]
+    do
+        if [ ${Formats[$index]} = $format ]
+        then break
+        fi
+        index=$[index + 1]
+    done
+    if [ x`which ${Cmds[$index]}` = x ]
+    then
+        echo "Warning: command ${Cmds[$index]} not found."
+        touch /test.txt &> /dev/null
+        if [ $? != 0 ]
+        then
+            echo "Error: Run with sudo or root to install ${Install[$index]}."
+            exit -1
+        else
+            sudo apt-get install ${Install[$index]}
+            if [ $? != 0 -o x`which ${Cmds[$index]}` = x ]
+            then
+                echo -n "Error: some errors occurred while "
+                echo "trying to install ${Install[$index]}"
+                exit -1
+            fi
+        fi
+    fi
+    my-echo blue bold -t ">> ${Cmds[$index]} ${Args[$index]} $file"
+    ${Cmds[$index]} ${Args[$index]} $file
+    if [ $? != 0 ]
+    then
+        echo -n "Error: Some errors occurred while trying to "
+        echo "decompressed file $file."
+        exit -1
+    fi
+
+    if [ x$options = x-d ]
+    then
+        my-echo blue bold -t ">> rm -rf $file"
+        rm -rf $file
+    fi
+done
