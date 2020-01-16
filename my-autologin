@@ -24,8 +24,8 @@ then
 	echo ">> Start login..."
     if [ x$password = x ]
     then
-        echo -n "Please enter your password: "
-        read -p password
+        echo -n "Please enter the password for [$studentId]: "
+        read -s password
 	fi
     result=`$(dirname $0)/src/pku_connect -u $studentId -p $password`
 	if [ $? != 0 ]
