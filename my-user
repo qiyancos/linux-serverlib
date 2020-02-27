@@ -5,7 +5,8 @@ then
 	echo "    -l, list all the users login through ssh"
 	echo "    -k, kill the connections given by the numbers following this option"
 	echo "        you may add 5 to this option when you want kill connection pts/5"
-	exit 0
+	echo "        Use \"-k other\" to kill all the connections except current one"
+    exit 0
 fi
 
 currentId=`who am i | sed 's/pts\///' | awk '{print $2}'`
@@ -13,7 +14,18 @@ if [[ x$1 =~ ^(x-l|x)$ ]]
 then who | sed "/pts\/$currentId/ s/$/ (current connection)/"
 elif [ $1 = -k ]
 then
-	shift
+	if [ "`echo $* | grep 'other'`"x != x ]
+    then
+	    echo "Warning: All other connections except current connection will be killed."
+        targetIds=`who | grep $USER | sed 's/pts\///' | awk '{print $2}'`
+        for id in $targetIds
+        do
+			echo ">> Killing connection \"pts/$id\""
+			pkill -kill -t pts/$id
+        done
+        exit
+    fi
+    shift
 	for targetId in $*
 	do
 		if [ $targetId = $currentId ]
