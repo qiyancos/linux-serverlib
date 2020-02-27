@@ -20,8 +20,11 @@ then
         targetIds=`who | grep $USER | sed 's/pts\///' | awk '{print $2}'`
         for id in $targetIds
         do
-			echo ">> Killing connection \"pts/$id\""
-			pkill -kill -t pts/$id
+			if [ $id != $currentId ]
+            then
+                echo ">> Killing connection \"pts/$id\""
+			    pkill -kill -t pts/$id
+            fi
         done
         exit
     fi
